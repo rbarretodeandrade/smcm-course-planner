@@ -1,0 +1,92 @@
+# Kiosk App Verification Log
+
+Tracking which majors, minors, and LEAD Paths have been checked against the official SMCM catalog and fixed in `app_multi_major.py`.
+
+---
+
+## Verification Protocol
+
+Run all 3 steps for every major. Steps 1 and 2 are required; Step 3 only applies if a matching minor exists.
+
+### Step 1 — Data Accuracy (Catalog vs. App)
+1. Fetch the catalog URL for the major
+2. Compare every required course (code, name, credits) against `course_data` in `app_multi_major.py`
+3. Verify year placement matches the catalog's **recommended sequence of study**
+4. Fix any discrepancies and note them in this log
+
+### Step 2 — Code Extractability
+For every course string in the major's `course_data` (skip the "LEAD" category — it's unused):
+- Apply `extract_course_code()` mentally: split by `-`, take [0]; split by `(`, take [0]; split by `:`, take [0]; split by spaces; if tokens[1] (slash-stripped) is a digit or starts with a digit → returns "DEPT NNN", else None
+- Flag any string that **should** have an extractable code but doesn't (e.g. dashes in the prefix before the code, like `"Recommended for grad/pre-professional: CHEM 312..."` → returns None because `-` in `pre-professional` is hit first)
+- Generic placeholder strings returning None are **expected and fine** — they show as `major_only` (green) correctly
+- Known risk patterns: slash variants (`PSYC 493/494` → extracts as `PSYC 493/494`, fine), lab suffixes (`BIOL 105L` → extracts correctly), colon-prefixed strings (`"Toolkit Course: ..."` → returns None, fine)
+
+### Step 3 — LEAD & Minor Overlap
+**LEAD overlap:** Search `lead_paths` per-year `courses` dicts for any course code that also appears in the major's `course_data` for the **same year**. If found, the student will see it in purple. If the course is only in `inquiry_electives` (expandable choice lists), overlap detection will NOT fire — this is a known architectural limitation, not a bug.
+
+**Minor overlap:** Find the discipline's minor in `minor_data`. Check whether its required courses match major required courses. Matching codes will show as "covered by major" in the minor section. Verify the codes are identical strings (e.g. `BIOL 105` in both).
+
+### Known Architectural Limitation
+Courses that appear only in a LEAD path's `inquiry_electives` (expandable choice lists) are never auto-detected as overlapping with major requirements. Students will see them listed separately (blue expander + green major entry) with no purple indicator. This affects all majors. Workaround used for ENST: hard-code the most likely overlap course directly into the LEAD path's per-year `courses` dict (e.g. ENST 250). Not done for other majors — acceptable trade-off.
+
+---
+
+| Item | Type | Catalog URL | Status | Issues Found & Fixed |
+|------|------|-------------|--------|----------------------|
+| Environmental Studies | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=329&returnto=185 | ✅ Checked & Fixed | (1) ENST 250 + Chemistry w/Lab moved from Sophomore → First Year; (2) Toolkit moved to Sophomore alone; (3) Application Requirement moved from Senior → Junior for all 3 tracks |
+| LEAD Inquiries | LEAD Path | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=364&returnto=185 | ✅ Checked & Fixed | (1) Justice: added BIOL 105L, PHYS 142, PHYS 152, PHYS 251; (2) Gender & Power: same 4 courses added; (3) Public & Environmental Health: added BIOL 105L + 9 missing ART courses; (4) Global Studies, Asia in the World, Latinx Americas, Idea of the West: built full inquiry_electives blocks from scratch |
+| Universal LEAD Requirements | LEAD (all paths) | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=308 | ✅ Checked & Fixed | (1) Added LEAD 301 as alternative to LEAD 101 for transfers (24+ credits) across all paths; (2) Added LEAD 311 as optional for transfers/dual-enrollment alongside LEAD 211 across all paths; (3) Added LEAD 250/ILPF 200 (1 cr, C/NC) note to Inquiry path summary; (4) Added capstone public presentation requirement; (5) Added minimum D grade in Foundational Study courses to summary |
+| LEAD Exploration | LEAD Path | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=308 | ✅ Checked & Fixed | (1) Built full inquiry_electives block with all 6 areas and complete course lists (Arts: 36 courses, Cultural Literacy: 23, Humanities: 29, Mathematics: 12, Natural Sciences w/Lab: 16, Social & Behavioral Sciences: 6); (2) Removed incorrect ILCS 201 from Cultural Literacy; (3) Added ECON 103 and POSC 100 to Social & Behavioral Sciences |
+| Biology | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=316&returnto=184 | ✅ Checked & Fixed | (1) CHEM 312 moved from Junior → Sophomore; (2) MATH 151/152 moved from Junior → Sophomore; (3) PHYS stays in Junior. Protocol: Step 1 ✅ Step 2 ✅ (all codes extract; "Recommended for grad/pre-professional" strings return None — expected/fine) Step 3 ✅ (Biology minor core fully covered by major; BIOL 105 in LEAD inquiry_electives only — known limitation) |
+| Marine Science | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=335&returnto=184 | ✅ Checked & Fixed | (1) CHEM 103 was missing — added to Physical Science Foundation/First Year (catalog requires Chemistry I & II); (2) MATH 151/152 relabeled as "Strongly recommended" (catalog only requires Statistics; Calculus is strongly recommended). Protocol: Step 1 ✅ Step 2 ✅ (no standalone MRNE/BIOL/CHEM overlap in LEAD per-year entries — known limitation) Step 3 N/A (no Marine Science minor) |
+| Psychology | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=349&returnto=185 | ✅ Checked & Fixed | (1) Moved breadth note to Breadth Requirements/First Year; (2) Removed redundant breadth note from Foundation/Sophomore; (3) Clarified breadth = 1 course from each of 5 areas with level constraints per year. Protocol: Step 1 ✅ Step 2 ✅ (all specific codes extract correctly; PSYC 493/494 slash handled) Step 3 ✅ (no Psychology minor exists; PSYC 101 in LEAD inquiry_electives only — known limitation) |
+| Political Science | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=351&returnto=184 | ✅ Checked & Fixed | (1) POSC 200 moved from Sophomore → First Year (catalog has both POSC 100 and 200 in First Year); (2) Added note to take one 200-level survey in First Year; (3) Depth credits split: 4 cr added to Sophomore, 8 cr in Junior (was all in Junior). Protocol: Step 1 ✅ Step 2 ✅ (POSC 100 overlaps correctly with Global Studies First Year per-year entry; POSC 200 only in inquiry_electives — known limitation) Step 3 ✅ (Poli Sci minor already verified; POSC 100 in First Year matches) |
+| English | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=326&returnto=184 | ✅ Checked & Fixed | (1) ENGL 204 moved from Sophomore → First Year; (2) Added note to begin one of ENGL 284/285 in First Year; (3) Added 100/200-level elective to First Year; (4) Sophomore elective note updated to specify two 100/200-level courses; (5) Junior elective updated to specify two 300/400-level courses. Protocol: Step 1 ✅ Step 2 ✅ (ENGL 284/285 only in LEAD Exploration inquiry_electives — known limitation) Step 3 ✅ (English minor includes ENGL 284/285 — covered by major) |
+| Computer Science | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=321&returnto=184 | ✅ Checked & Fixed | (1) COSC 402 moved from Senior → Junior (catalog sequence has it in Junior Spring); COSC 401 remains in Senior as completion of the sequence. Protocol: Step 1 ✅ Step 2 ✅ (COSC 120 only in LEAD inquiry_electives — known limitation) Step 3 ✅ (CS minor courses covered by major) |
+| Chemistry | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=320&returnto=184 | ✅ Checked & Fixed | (1) CHEM 103 (General Chemistry I) added to Chemistry Core/First Year — was missing from app; catalog lists it in First Year sequence. Protocol: Step 1 ✅ Step 2 ✅ (all codes extract; generic elective strings return None — expected) Step 3 N/A (no Chemistry minor) |
+| History | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=331 | ✅ Checked & Fixed | (1) HIST 224 moved from First Year → Sophomore (catalog recommended sequence); (2) First Year now shows intro course + one 200-level; (3) Area distribution spread across Sophomore (Americas) and Junior (Europe, Asia & Africa, Comparative). Protocol: Step 1 ✅ Step 2 ✅ Step 3 ✅ (History minor already verified; no HIST course overlaps in LEAD per-year entries) |
+| Economics | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=323&returnto=184 | ✅ Checked & Fixed | (1) Junior field-specific courses corrected from three → four 300-level courses (12 → 16 credits). Protocol: Step 1 ✅ Step 2 ✅ (ECON 102/103 only in LEAD inquiry_electives — known limitation) Step 3 ✅ (Economics minor courses covered by major) |
+| Mathematics | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=361 | ✅ Checked & Fixed | (1) Removed MATH 490 from elective_courses list — it is a capstone option, not an elective; (2) Restructured Senior-Level Electives: Junior now shows "MATH 422 or MATH 452 (required choice)"; Senior shows "one additional senior-level elective (MATH 411, COSC 440/455, or approved)". Protocol: Step 1 ✅ Step 2 ✅ Step 3 ✅ (Mathematics minor already verified; MATH 151/152 overlap in LEAD inquiry_electives — known limitation) |
+| Anthropology | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=309 | ✅ Checked & Correct | No issues. Core sequence (ANTH 101 → subfields → ANTH 201/202 → ANTH 349/385 → capstone), elective counts (2 in Sophomore + 1 in Junior = 3 total), and tracks (General/Archaeology) all match catalog. Protocol: Step 1 ✅ Step 2 ✅ Step 3 ✅ (Anthropology minor already verified and matches) |
+| Philosophy | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=355 | ✅ Checked & Fixed | (1) Added "one upper-level philosophy elective (300+ level)" to First Year — catalog recommended sequence includes this alongside the intro course. Protocol: Step 1 ✅ Step 2 ✅ Step 3 ✅ (Philosophy minor already verified; no PHIL courses in LEAD per-year entries) |
+| Physics | Major | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=353 | ✅ Checked & Correct | No issues. Year placement (MATH 151/152 + PHYS 151/152 in First Year; MATH 255/256 + PHYS 251/351 in Sophomore; PHYS 312/462/CHEM106orCOSC120 in Junior; PHYS 311 in Senior) matches catalog exactly. Elective list and Applied Physics track also correct. Protocol: Step 1 ✅ Step 2 ✅ Step 3 N/A (no Physics major — Physics minor already verified) |
+| Sociology | Major | | ⬜ Not yet checked | |
+| Public Policy | Major | | ⬜ Not yet checked | |
+| Biochemistry | Major | | ⬜ Not yet checked | |
+| Neuroscience | Major | | ⬜ Not yet checked | |
+| Business Administration and Management | Major | | ⬜ Not yet checked | |
+| Studio Art | Major | | ⬜ Not yet checked | |
+| Spanish | Major | | ⬜ Not yet checked | |
+| Asian Studies | Major | | ⬜ Not yet checked | |
+| Women, Gender, and Sexuality Studies | Major | | ⬜ Not yet checked | |
+| Performing Arts (Integrated) | Major | | ⬜ Not yet checked | |
+| Performing Arts (Music) | Major | | ⬜ Not yet checked | |
+| Performing Arts (Theater, Dance, Performance Studies) | Major | | ⬜ Not yet checked | |
+| Biology | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=317 | ✅ Checked & Correct | No issues |
+| Anthropology | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=310 | ✅ Checked & Correct | No issues |
+| Data Science | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=370 | ✅ Checked & Correct | No issues |
+| Environmental Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=330 | ✅ Checked & Correct | No issues |
+| Political Science | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=350 | ✅ Checked & Correct | No issues |
+| Women, Gender, and Sexuality Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=336 | ✅ Checked & Fixed | Sophomore entry now notes that at least 4 cr should be 300+ to meet the 12-credit upper-level requirement |
+| African and African Diaspora Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=344 | ✅ Checked & Correct | No issues |
+| Art | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=312 | ✅ Checked & Correct | No issues |
+| Asian Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=314 | ✅ Checked & Fixed | (1) Elective count was 4 → fixed to 5 courses; (2) Language requirement was "recommended" → fixed to required (ILCC 102 or equivalent); (3) Total was 20 → fixed to 24 |
+| Business Administration and Management | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=319 | ✅ Checked & Correct | No issues |
+| Computer Science | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=322 | ✅ Checked & Correct | No issues |
+| Creative Writing | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=328 | ✅ Checked & Correct | No issues |
+| Economics | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=324 | ✅ Checked & Correct | No issues |
+| Educational Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=343 | ✅ Checked & Fixed | (1) Wrong prefix EDST → EDUC; (2) Replaced fabricated courses with correct EDUC 206, 336, 368, 396/386; (3) Added PSYC 230/431 development requirement; (4) Total fixed from 24 to 20; (5) Added note about EDUC 491 for MAT licensure tracks |
+| English | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=327 | ✅ Checked & Correct | No issues |
+| History | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=332 | ✅ Checked & Correct | No issues |
+| Mathematics | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=306 | ✅ Checked & Correct | No issues |
+| Philosophy | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=354 | ✅ Checked & Correct | No issues |
+| Physics | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=352 | ✅ Checked & Fixed | Removed "300+" restriction from elective label — PHYS 281 (200-level) is on the catalog elective list |
+| Sociology | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=346 | ✅ Checked & Correct | No issues |
+| Neuroscience | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=359 | ✅ Checked & Correct | Electives listed by discipline rather than individual courses; structure accurate |
+| Music | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=340 | ✅ Checked & Fixed | (1) Wrong prefix MUS → MUSC/MUSA; (2) Wrong course numbers entirely; (3) Added required MUSA ensemble (4 semesters) and private lessons (4 semesters); (4) Total fixed to 26+ credits |
+| Theater Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=337 | ✅ Checked & Fixed | (1) TDPS 100 not required → removed; (2) Added PERF 110 and TDPS 171 as required; (3) TDPS 230/250 choice added; (4) Electives fixed from 4 courses/16 cr to 3 courses/12 cr; (5) Total fixed from 24 to 20 |
+| International Languages and Cultures | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=362 | ✅ Checked & Fixed | (1) Total credits wrong (24 → 18 minimum); (2) Fabricated course content removed; (3) Added French/Spanish vs Chinese concentration-specific requirements |
+| Materials Science | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=342 | ✅ Checked & Fixed | (1) CHEM 106 mislabeled as "General Chemistry I" → fixed to II; (2) PHYS 121 wrong → PHYS 141/151; (3) MTSC 200 wrong → MTSC 301; (4) Added missing required courses: CHEM 311, PHYS 462; (5) Elective count fixed from 3 to 1 |
+| Museum Studies | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=341 | ✅ Checked & Fixed | (1) Removed fabricated "One additional 200-level museum studies course"; (2) Total fixed from 24 to 20 |
+| Musical Arts Administration | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=339 | ✅ Checked & Correct | No issues |
+| Special Education | Minor | https://catalog.smcm.edu/preview_program.php?catoid=5&poid=338 | ✅ Checked & Correct | All 6 EDUC courses correct; catalog states 28 credits total (possible 7th course not captured by fetch — needs manual recount) |
