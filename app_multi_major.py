@@ -2142,7 +2142,6 @@ major_data = {
                 "SOCI 340 - Race and Ethnicity (4 credits)",
                 "SOCI 345 - Sex and Gender (4 credits)",
                 "SOCI 347 - Work and Family (4 credits)",
-                "SOCI 350 - Medical Sociology (4 credits)",
                 "SOCI 355 - Demography (4 credits)",
                 "SOCI 360 - Urban Sociology (4 credits)",
                 "SOCI 365 - Criminology (4 credits)",
@@ -2241,12 +2240,13 @@ major_data = {
             "Core Requirements": {
                 "First Year": [],
                 "Sophomore": [
-                    "POSC 311 - Public Policy (4 credits)",
-                    "POSC 315 - Policy Evaluation (4 credits)",
                     "Quantitative methods: ECON 253 OR POSC 200 (4 credits)",
                     "Intermediate economics: ECON 251 OR ECON 252 (4 credits)"
                 ],
-                "Junior": [],
+                "Junior": [
+                    "POSC 311 - Public Policy (4 credits)",
+                    "POSC 315 - Policy Evaluation (4 credits)"
+                ],
                 "Senior": []
             },
             "American Public Policy Track": {
@@ -2316,6 +2316,7 @@ major_data = {
             },
             "Chemistry Core": {
                 "First Year": [
+                    "CHEM 103 - General Chemistry I (4 credits)",
                     "CHEM 106 - General Chemistry II (4 credits)"
                 ],
                 "Sophomore": [
@@ -2504,7 +2505,8 @@ major_data = {
                 "First Year": [
                     "BADM 101 - Introduction to Business Leadership and Business Ethics (4 credits)",
                     "ECON 102 - Principles of Microeconomics (4 credits)",
-                    "ECON 103 - Principles of Macroeconomics (4 credits)"
+                    "ECON 103 - Principles of Macroeconomics (4 credits)",
+                    "BADM 201 - Principles of Accounting I (4 credits)"
                 ],
                 "Sophomore": [],
                 "Junior": [],
@@ -2513,7 +2515,6 @@ major_data = {
             "Technical Core": {
                 "First Year": [],
                 "Sophomore": [
-                    "BADM 201 - Principles of Accounting I (4 credits)",
                     "ECON 253 - Economic Statistics (4 credits)",
                     "One from: BADM 202, ECON 251, or ECON 252 (4 credits)"
                 ],
@@ -2522,10 +2523,11 @@ major_data = {
             },
             "Business Core": {
                 "First Year": [],
-                "Sophomore": [],
-                "Junior": [
+                "Sophomore": [
                     "BADM 301 - Management (4 credits)",
-                    "BADM 302 - Marketing (4 credits)",
+                    "BADM 302 - Marketing (4 credits)"
+                ],
+                "Junior": [
                     "BADM 303 - Corporation Finance (4 credits)"
                 ],
                 "Senior": []
@@ -2577,12 +2579,13 @@ major_data = {
             },
             "Foundation Studio": {
                 "First Year": [
-                    "ART 205 - Visual Thinking (4 credits)",
-                    "ART 214 - Digital Media (4 credits)"
+                    "ART 205 - Introduction to Visual Thinking (4 credits)",
+                    "One 200-level art elective: drawing, painting, photography, printmaking, etc. (4 credits)",
+                    "ARTH 225 - Art History Survey I (4 credits)"
                 ],
                 "Sophomore": [
-                    "Three 200-level art courses: drawing, painting, photography, sculpture, printmaking, etc. (12 credits)",
-                    "ARTH 225 - Art History Survey I (4 credits)",
+                    "ART 214 - Introduction to Digital Media Art (4 credits)",
+                    "One 200-level art elective (4 credits)",
                     "ARTH 226 - Art History Survey II (4 credits)"
                 ],
                 "Junior": [],
@@ -2592,18 +2595,21 @@ major_data = {
                 "First Year": [],
                 "Sophomore": [],
                 "Junior": [
-                    "Three 300-level advanced studio courses (12 credits)",
-                    "One additional art history course (4 credits)"
+                    "One 200-level art elective (3rd introductory skills course, 4 credits)",
+                    "Two 300-level advanced studio courses (8 credits)",
+                    "One additional 200/300-level art history course (4 credits)"
                 ],
-                "Senior": []
+                "Senior": [
+                    "One 300-level advanced studio course (4 credits)"
+                ]
             },
             "Capstone": {
                 "First Year": [],
                 "Sophomore": [],
                 "Junior": [],
                 "Senior": [
-                    "ART 430 - Capstone Creative Practices (4 credits)",
-                    "ART 431 - Capstone Professional Practices (4 credits)"
+                    "ART 430 - Capstone 1: Creative Practices in Art (4 credits)",
+                    "ART 431 - Capstone 2: Professional Practices in Art (4 credits)"
                 ]
             }
         }
@@ -2729,7 +2735,8 @@ major_data = {
             },
             "Foundation": {
                 "First Year": [
-                    "Begin Asian language study: ILCC 101/102 or equivalent",
+                    "ILCC 101 - Elementary Chinese I (4 credits) [or equivalent placement]",
+                    "ILCC 102 - Elementary Chinese II (4 credits) [or equivalent placement]",
                     "ASIA 200 - Introduction to Asian Studies (4 credits)"
                 ],
                 "Sophomore": [
@@ -2949,12 +2956,13 @@ major_data = {
             "Foundation": {
                 "First Year": [
                     "PERF 110 - Critical Creativity in the Performing Arts (4 credits)",
-                    "TDPS 170/171 - Theatre and Performance Studies I & II (8 credits)",
-                    "TDPS 230 - Acting (4 credits)",
-                    "TDPS 250 - Movement (4 credits)"
+                    "TDPS 171 - Elements of Design (4 credits)",
+                    "TDPS 170 - Stagecraft (4 credits)",
+                    "PERF 325 - Methods of Study in the Performing Arts (4 credits)"
                 ],
                 "Sophomore": [
-                    "PERF 325 - Methods (4 credits)",
+                    "TDPS 250 - Movement I (4 credits)",
+                    "TDPS 230 - Acting I (4 credits)",
                     "TDPS 371 - Production Lab (begin 4-semester sequence)",
                     "Participate in TDPS 370 Studio productions"
                 ],
